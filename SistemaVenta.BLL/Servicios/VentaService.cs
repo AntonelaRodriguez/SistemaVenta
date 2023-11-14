@@ -52,8 +52,8 @@ namespace SistemaVenta.BLL.Servicios
             {
                 if(buscarPor == "fecha")
                 {
-                    DateTime fech_Inicio = DateTime.ParseExact(fechaInicio, "dd/MM/yyy", new CultureInfo("es-AR"));
-                    DateTime fech_Fin = DateTime.ParseExact(fechaFin, "dd/MM/yyy", new CultureInfo("es-AR"));
+                    DateTime fech_Inicio = DateTime.ParseExact(fechaInicio, "dd/MM/yyyy", new CultureInfo("es-AR"));
+                    DateTime fech_Fin = DateTime.ParseExact(fechaFin, "dd/MM/yyyy", new CultureInfo("es-AR"));
 
                     ListaResultado = await query.Where(v =>
                         v.FechaRegistro.Value.Date >= fech_Inicio.Date &&
@@ -81,8 +81,8 @@ namespace SistemaVenta.BLL.Servicios
 
             try
             {
-                DateTime fech_Inicio = DateTime.ParseExact(fechaInicio, "dd/MM/yyy", new CultureInfo("es-AR"));
-                DateTime fech_Fin = DateTime.ParseExact(fechaFin, "dd/MM/yyy", new CultureInfo("es-AR"));
+                DateTime fech_Inicio = DateTime.ParseExact(fechaInicio, "dd/MM/yyyy", new CultureInfo("es-AR"));
+                DateTime fech_Fin = DateTime.ParseExact(fechaFin, "dd/MM/yyyy", new CultureInfo("es-AR"));
 
                 ListaResultado = await query
                     .Include(p => p.IdProductoNavigation)
