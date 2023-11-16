@@ -20,11 +20,12 @@ namespace SistemaVenta.BLL.Servicios
         private readonly IGenericRepository<Menu> _menuRepositorio;
         private readonly IMapper _mapper;
 
-        public MenuService(IGenericRepository<Usuario> usuarioRepositorio, IGenericRepository<MenuRol> menuRolRepositorio, IGenericRepository<Menu> menuRepositorio)
+        public MenuService(IGenericRepository<Usuario> usuarioRepositorio, IGenericRepository<MenuRol> menuRolRepositorio, IGenericRepository<Menu> menuRepositorio, IMapper mapper)
         {
             _usuarioRepositorio = usuarioRepositorio;
             _menuRolRepositorio = menuRolRepositorio;
             _menuRepositorio = menuRepositorio;
+            _mapper = mapper;
         }
 
         public async Task<List<MenuDTO>> Lista(int idUsuario)
