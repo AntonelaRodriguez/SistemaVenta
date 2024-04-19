@@ -11,6 +11,9 @@ using SistemaVenta.DAL.Repositorios.Contrato;
 using SistemaVenta.DTO;
 using SistemaVenta.Model;
 
+using BCrypt.Net;
+
+
 namespace SistemaVenta.BLL.Servicios
 {
     public class UsuarioService : IUsuarioService
@@ -42,15 +45,19 @@ namespace SistemaVenta.BLL.Servicios
         {
             try
             {
-                var queryUsuario = await _usuarioRepositorio.Consultar(u => u.Correo == correo && u.Clave == clave);
+                var queryUsuario = await _usuarioRepositorio.Consultar(u => u.Correo == correo);
 
                 if (queryUsuario.FirstOrDefault() == null)
                     throw new TaskCanceledException("El usuario no existe");
 
-                Usuario devolverUsuario = queryUsuario.Include(rol => rol.IdRolNavigation).First();
+                Usuario usuarioEncontrado = queryUsuario.First();
 
-                return _mapper.Map<SesionDTO>(devolverUsuario);
-            } catch
+                if (!BCrypt.Net.BCrypt.Verify(clave, usuarioEncontrado.Clave))
+                    throw new TaskCanceledException("Contraseña incorrecta");
+
+                return _mapper.Map<SesionDTO>(usuarioEncontrado);
+            }
+            catch
             {
                 throw;
             }
@@ -84,22 +91,29 @@ namespace SistemaVenta.BLL.Servicios
 
                 var usuarioEncontrado = await _usuarioRepositorio.Obtener(u => u.IdUsuario == usuarioModelo.IdUsuario);
 
-                if(usuarioEncontrado == null)
-                    throw new TaskCanceledException("El usuario no exite");
+                if (usuarioEncontrado == null)
+                    throw new TaskCanceledException("El usuario no existe");
 
                 usuarioEncontrado.NombreCompleto = usuarioModelo.NombreCompleto;
                 usuarioEncontrado.Correo = usuarioModelo.Correo;
                 usuarioEncontrado.IdRol = usuarioModelo.IdRol;
-                usuarioEncontrado.Clave = usuarioModelo.Clave;
+
+                // Verificar si se proporcionó una nueva contraseña
+                if (!string.IsNullOrEmpty(usuarioModelo.Clave))
+                {
+                    usuarioEncontrado.Clave = BCrypt.Net.BCrypt.HashPassword(usuarioModelo.Clave);
+                }
+
                 usuarioEncontrado.EsActivo = usuarioModelo.EsActivo;
 
                 bool respuesta = await _usuarioRepositorio.Editar(usuarioEncontrado);
 
                 if (!respuesta)
-                    throw new TaskCanceledException("Nos se pude editar el usuario");
+                    throw new TaskCanceledException("No se pudo editar el usuario");
 
                 return respuesta;
-            } catch
+            }
+            catch
             {
                 throw;
             }
@@ -109,10 +123,14 @@ namespace SistemaVenta.BLL.Servicios
         {
             try
             {
+                if (id == 1)
+                {
+                    throw new Exception("No se puede eliminar el usuario con ID 1.");
+                }
                 var usuarioEncontrado = await _usuarioRepositorio.Obtener(u => u.IdUsuario == id);
 
                 if(usuarioEncontrado == null)
-                    throw new TaskCanceledException("El usuario no eziste");
+                    throw new TaskCanceledException("El usuario no existe");
 
                 bool respuesta = await _usuarioRepositorio.Eliminar(usuarioEncontrado);
 

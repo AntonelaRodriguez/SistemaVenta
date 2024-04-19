@@ -5,6 +5,8 @@ using SistemaVenta.BLL.Servicios.Contrato;
 using SistemaVenta.DTO;
 using SistemaVenta.Utilidad;
 
+using BCrypt.Net;
+
 namespace SistemaVenta.API.Controllers
 {
     [Route("api/[controller]")]
@@ -45,8 +47,23 @@ namespace SistemaVenta.API.Controllers
 
             try
             {
-                rsp.status = true;
-                rsp.value = await _usuarioServicio.ValidarCredenciales(login.Correo, login.Clave);
+
+                var usuario = await _usuarioServicio.ValidarCredenciales(login.Correo, login.Clave);
+
+                if (usuario != null)
+                {
+                    // Crear objeto SesionDTO con la información necesaria
+                    var sesion = new SesionDTO
+                    {
+                        IdUsuario = usuario.IdUsuario,
+                        NombreCompleto = usuario.NombreCompleto,
+                        Correo = usuario.Correo,
+                        RolDescripcion = usuario.RolDescripcion
+                    };
+
+                    rsp.status = true;
+                    rsp.value = sesion;
+                }
             }
             catch (Exception ex)
             {
@@ -64,6 +81,9 @@ namespace SistemaVenta.API.Controllers
 
             try
             {
+                // Encriptar la contraseña antes de guardarla
+                usuario.Clave = BCrypt.Net.BCrypt.HashPassword(usuario.Clave);
+
                 rsp.status = true;
                 rsp.value = await _usuarioServicio.Crear(usuario);
             }
